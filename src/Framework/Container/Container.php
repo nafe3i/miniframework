@@ -17,6 +17,12 @@ final class Container implements ContainerInterface
     /** @var array<string, Closure(ContainerInterface): mixed> */
     private array $factories = [];
 
+    /** @var array<string, true> Identifiers whose instance is shared. */
+    private array $shared = [];
+
+    /** @var array<string, mixed> Already built shared instances. */
+    private array $instances = [];
+
     /**
      * Registers a factory producing a new instance on every resolution.
      *
@@ -27,7 +33,26 @@ final class Container implements ContainerInterface
      */
     public function bind(string $id, Closure $factory): void
     {
-        $this->factories[$id] = $factory;
+        $this->register($id, $factory, false);
+    }
+
+    /**
+     * Registers a factory whose result is built lazily, once, then shared.
+     *
+     * @param Closure(ContainerInterface): mixed $factory
+     */
+    public function singleton(string $id, Closure $factory): void
+    {
+        $this->register($id, $factory, true);
+    }
+
+    /**
+     * Registers an already built object as a shared service.
+     */
+    public function instance(string $id, object $instance): void
+    {
+        $this->register($id, static fn (): object => $instance, true);
+        $this->instances[$id] = $instance;
     }
 
     public function has(string $id): bool
@@ -37,10 +62,33 @@ final class Container implements ContainerInterface
 
     public function get(string $id): mixed
     {
+        if (array_key_exists($id, $this->instances)) {
+            return $this->instances[$id];
+        }
+
         if (!isset($this->factories[$id])) {
             throw ServiceNotFoundException::forId($id);
         }
 
-        return ($this->factories[$id])($this);
+        $service = ($this->factories[$id])($this);
+
+        if (isset($this->shared[$id])) {
+            $this->instances[$id] = $service;
+        }
+
+        return $service;
+    }
+
+    /**
+     * @param Closure(ContainerInterface): mixed $factory
+     */
+    private function register(string $id, Closure $factory, bool $shared): void
+    {
+        $this->factories[$id] = $factory;
+        unset($this->instances[$id], $this->shared[$id]);
+
+        if ($shared) {
+            $this->shared[$id] = true;
+        }
     }
 }

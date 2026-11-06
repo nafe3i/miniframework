@@ -75,6 +75,43 @@ final class ContainerTest extends TestCase
         self::assertSame(2, $container->get('value'));
     }
 
+    public function testSingletonIsBuiltLazilyOnceAndShared(): void
+    {
+        $container = new Container();
+        $builds = 0;
+        $container->singleton('db', static function () use (&$builds): stdClass {
+            $builds++;
+
+            return new stdClass();
+        });
+
+        self::assertSame(0, $builds, 'A singleton must not be built before it is requested.');
+        self::assertSame($container->get('db'), $container->get('db'));
+        self::assertSame(1, $builds);
+    }
+
+    public function testRegistersPrebuiltInstance(): void
+    {
+        $container = new Container();
+        $object = new stdClass();
+        $container->instance('object', $object);
+
+        self::assertTrue($container->has('object'));
+        self::assertSame($object, $container->get('object'));
+    }
+
+    public function testRebindingDiscardsPreviouslySharedInstance(): void
+    {
+        $container = new Container();
+        $container->singleton('service', static fn (): stdClass => new stdClass());
+        $first = $container->get('service');
+
+        $container->bind('service', static fn (): stdClass => new stdClass());
+
+        self::assertNotSame($first, $container->get('service'));
+        self::assertNotSame($container->get('service'), $container->get('service'));
+    }
+
     public function testMissingServiceThrowsClearException(): void
     {
         $container = new Container();
