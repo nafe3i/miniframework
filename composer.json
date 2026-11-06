@@ -1,0 +1,27 @@
+{
+    "name": "miniforge/miniforge-php",
+    "description": "MiniForge PHP - a minimal, educational MVC framework inspired by Laravel's core mechanisms, with a Task Manager demo application.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "MiniForge\\": "src/Framework/",
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
