@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Routing;
 
+use MiniForge\Exceptions\MethodNotAllowedHttpException;
 use MiniForge\Exceptions\NotFoundHttpException;
 use MiniForge\Http\Request;
 use MiniForge\Routing\Router;
@@ -93,6 +94,31 @@ final class RouterMatchingTest extends TestCase
 
         $this->expectException(NotFoundHttpException::class);
         $this->router->match(new Request('GET', '/files/readmeXtxt'));
+    }
+
+    public function testWrongMethodThrowsMethodNotAllowedWithAllowHeader(): void
+    {
+        try {
+            $this->router->match(new Request('DELETE', '/tasks'));
+            self::fail('Expected a MethodNotAllowedHttpException.');
+        } catch (MethodNotAllowedHttpException $exception) {
+            self::assertSame(405, $exception->statusCode());
+            self::assertSame(['GET', 'POST'], $exception->allowedMethods());
+            self::assertSame(['Allow' => 'GET, POST'], $exception->headers());
+        }
+    }
+
+    public function testAllowHeaderOnlyListsMethodsOfTheMatchingPath(): void
+    {
+        $this->router->get('/tasks/{id}', [DummyController::class, 'show']);
+        $this->router->post('/tasks/{id}/update', [DummyController::class, 'update']);
+
+        try {
+            $this->router->match(new Request('GET', '/tasks/5/update'));
+            self::fail('Expected a MethodNotAllowedHttpException.');
+        } catch (MethodNotAllowedHttpException $exception) {
+            self::assertSame(['POST'], $exception->allowedMethods());
+        }
     }
 
     public function testUnknownRouteThrowsNotFound(): void

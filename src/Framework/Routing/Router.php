@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MiniForge\Routing;
 
 use MiniForge\Exceptions\DuplicateRouteException;
+use MiniForge\Exceptions\MethodNotAllowedHttpException;
 use MiniForge\Exceptions\NotFoundHttpException;
 use MiniForge\Http\Request;
 
@@ -76,18 +77,31 @@ final class Router
      * among dynamic routes, the first declared wins.
      *
      * @throws NotFoundHttpException When no route matches the path
+     * @throws MethodNotAllowedHttpException When the path matches only with other methods
      */
     public function match(Request $request): RouteMatch
     {
+        $allowedMethods = [];
+
         foreach ($this->orderedRoutes() as $route) {
-            if ($route->method() !== $request->method()) {
+            $parameters = $route->matchPath($request->path());
+            if ($parameters === null) {
                 continue;
             }
 
-            $parameters = $route->matchPath($request->path());
-            if ($parameters !== null) {
+            if ($route->method() === $request->method()) {
                 return new RouteMatch($route, $parameters);
             }
+
+            $allowedMethods[] = $route->method();
+        }
+
+        if ($allowedMethods !== []) {
+            throw new MethodNotAllowedHttpException($allowedMethods, sprintf(
+                'Method [%s] is not allowed for [%s].',
+                $request->method(),
+                $request->path(),
+            ));
         }
 
         throw new NotFoundHttpException(sprintf('No route matches [%s %s].', $request->method(), $request->path()));
