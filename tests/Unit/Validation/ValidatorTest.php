@@ -67,6 +67,52 @@ final class ValidatorTest extends TestCase
         self::assertSame(['title', 'status'], array_keys($errors));
     }
 
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function nonStrings(): iterable
+    {
+        yield 'array' => [['injected']];
+        yield 'integer' => [42];
+        yield 'boolean' => [true];
+    }
+
+    #[DataProvider('nonStrings')]
+    public function testIncompatibleTypeIsRejected(mixed $value): void
+    {
+        self::assertSame(
+            ['title' => ['The title must be a string.']],
+            $this->validator->errors(['title' => $value], ['title' => 'required|string']),
+        );
+    }
+
+    public function testStringIsAccepted(): void
+    {
+        self::assertSame([], $this->validator->errors(['title' => 'text'], ['title' => 'required|string']));
+    }
+
+    public function testFirstFailingRuleWins(): void
+    {
+        self::assertSame(
+            ['title' => ['The title is required.']],
+            $this->validator->errors(['title' => ''], ['title' => 'required|string']),
+        );
+    }
+
+    public function testEmptyOptionalFieldSkipsOtherRules(): void
+    {
+        self::assertSame([], $this->validator->errors(['note' => ''], ['note' => 'string']));
+        self::assertSame([], $this->validator->errors([], ['note' => 'string']));
+    }
+
+    public function testFilledOptionalFieldIsStillChecked(): void
+    {
+        self::assertSame(
+            ['note' => ['The note must be a string.']],
+            $this->validator->errors(['note' => ['x']], ['note' => 'string']),
+        );
+    }
+
     public function testUnknownRuleIsAProgrammingError(): void
     {
         $this->expectException(InvalidArgumentException::class);

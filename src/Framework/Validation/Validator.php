@@ -11,7 +11,8 @@ use MiniForge\Exceptions\ValidationException;
  * Small rule-based validator.
  *
  *     $validator->validate($input, [
- *         'title' => 'required',
+ *         'title' => 'required|string',
+ *         'note'  => 'string',          // optional: skipped when empty
  *     ]);
  *
  * Rules are checked in order and the first failing rule of a field produces
@@ -49,8 +50,14 @@ final class Validator
 
         foreach ($rules as $field => $definition) {
             $value = $data[$field] ?? null;
+            $fieldRules = explode('|', $definition);
 
-            foreach (explode('|', $definition) as $rule) {
+            // An optional field left empty is valid: its other rules do not apply.
+            if (!in_array('required', $fieldRules, true) && self::isEmpty($value)) {
+                continue;
+            }
+
+            foreach ($fieldRules as $rule) {
                 [$name, $argument] = array_pad(explode(':', $rule, 2), 2, null);
 
                 $message = $this->check($field, $value, $name, $argument);
@@ -71,6 +78,7 @@ final class Validator
     {
         return match ($rule) {
             'required' => self::isEmpty($value) ? sprintf('The %s is required.', $field) : null,
+            'string' => is_string($value) ? null : sprintf('The %s must be a string.', $field),
             default => throw new InvalidArgumentException(sprintf('Unknown validation rule [%s].', $rule)),
         };
     }
