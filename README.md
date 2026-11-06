@@ -14,7 +14,7 @@ access, middleware, validation, error handling and a CLI — each piece covered 
 | Dependencies at runtime | none (only PHP extensions) |
 | Dev tools | PHPUnit 11.5, PHPStan 2 (level 8) |
 | Database | SQLite through PDO |
-| Tests | 250 tests / 475 assertions (177 unit, 73 integration) |
+| Tests | 253 tests / 481 assertions (179 unit, 74 integration) |
 | Status | V1 complete for local use — **not production-ready** (no CSRF, no auth) |
 
 ---
@@ -61,7 +61,7 @@ Open <http://localhost:8000>, then click **Tasks**.
 ### Check that everything works
 
 ```bash
-composer test        # 250 tests, all green
+composer test        # 253 tests, all green
 composer analyse     # PHPStan level 8: "No errors"
 php bin/forge route:list
 ```
@@ -338,8 +338,8 @@ More: [docs/architecture.md](docs/architecture.md) and the eight decision record
 
 ```bash
 composer test                               # whole suite
-vendor/bin/phpunit --testsuite Unit         # 177 tests
-vendor/bin/phpunit --testsuite Integration  # 73 tests
+vendor/bin/phpunit --testsuite Unit         # 179 tests
+vendor/bin/phpunit --testsuite Integration  # 74 tests
 vendor/bin/phpunit --testdox                # readable list of behaviours
 vendor/bin/phpunit --filter RouterMatchingTest
 composer analyse                            # PHPStan level 8
@@ -352,7 +352,7 @@ composer analyse                            # PHPStan level 8
 * PHPUnit is strict: risky tests, warnings and unexpected output fail the run.
 
 Last verified run: PHP 8.5.0, PHPUnit 11.5.57, PHPStan 2.3.5 →
-`OK (250 tests, 475 assertions)` and `[OK] No errors`.
+`OK (253 tests, 481 assertions)` and `[OK] No errors`.
 
 ---
 
@@ -404,7 +404,7 @@ git clone https://github.com/nafe3i/miniframework.git && cd miniframework
 php -v                                  # must be >= 8.2
 php -m | grep -iE "pdo_sqlite|mbstring|ctype"
 composer install
-composer test                           # expect: OK (250 tests, 475 assertions)
+composer test                           # expect: OK (253 tests, 481 assertions)
 composer analyse                        # expect: [OK] No errors
 php bin/forge route:list                # expect: 10 route(s)
 ```
