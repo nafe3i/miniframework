@@ -147,6 +147,30 @@ final class ValidatorTest extends TestCase
         $this->validator->errors(['title' => 'x'], ['title' => 'max:abc']);
     }
 
+    public function testInAcceptsListedValues(): void
+    {
+        self::assertSame([], $this->validator->errors(['status' => 'DONE'], ['status' => 'required|in:TODO,DONE']));
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function unlistedValues(): iterable
+    {
+        yield 'unknown value' => ['ARCHIVED'];
+        yield 'different case' => ['done'];
+        yield 'array' => [['DONE']];
+    }
+
+    #[DataProvider('unlistedValues')]
+    public function testInRejectsUnlistedValues(mixed $value): void
+    {
+        self::assertSame(
+            ['status' => ['The selected status is invalid.']],
+            $this->validator->errors(['status' => $value], ['status' => 'required|in:TODO,DONE']),
+        );
+    }
+
     public function testUnknownRuleIsAProgrammingError(): void
     {
         $this->expectException(InvalidArgumentException::class);

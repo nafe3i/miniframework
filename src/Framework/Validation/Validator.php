@@ -13,6 +13,7 @@ use MiniForge\Exceptions\ValidationException;
  *     $validator->validate($input, [
  *         'title' => 'required|string|max:255',
  *         'note'  => 'string|max:2000',   // optional: skipped when empty
+ *         'state' => 'required|in:OPEN,CLOSED',
  *     ]);
  *
  * Rules are checked in order and the first failing rule of a field produces
@@ -80,6 +81,9 @@ final class Validator
             'required' => self::isEmpty($value) ? sprintf('The %s is required.', $field) : null,
             'string' => is_string($value) ? null : sprintf('The %s must be a string.', $field),
             'max' => $this->checkMax($field, $value, $argument),
+            'in' => in_array($value, explode(',', (string) $argument), true)
+                ? null
+                : sprintf('The selected %s is invalid.', $field),
             default => throw new InvalidArgumentException(sprintf('Unknown validation rule [%s].', $rule)),
         };
     }
