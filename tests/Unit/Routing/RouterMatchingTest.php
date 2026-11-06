@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Routing;
 
+use MiniForge\Exceptions\NotFoundHttpException;
 use MiniForge\Http\Request;
 use MiniForge\Routing\Router;
 use PHPUnit\Framework\TestCase;
@@ -80,15 +81,29 @@ final class RouterMatchingTest extends TestCase
     {
         $this->router->get('/tasks/{id}', [DummyController::class, 'show']);
 
-        self::assertNull($this->router->match(new Request('GET', '/tasks/1/extra')));
+        $this->expectException(NotFoundHttpException::class);
+        $this->router->match(new Request('GET', '/tasks/1/extra'));
     }
 
     public function testLiteralPartsAreNotTreatedAsRegex(): void
     {
         $this->router->get('/files/{name}.txt', [DummyController::class, 'file']);
 
-        self::assertNotNull($this->router->match(new Request('GET', '/files/readme.txt')));
-        self::assertNull($this->router->match(new Request('GET', '/files/readmeXtxt')));
+        self::assertSame(['name' => 'readme'], $this->router->match(new Request('GET', '/files/readme.txt'))->parameters());
+
+        $this->expectException(NotFoundHttpException::class);
+        $this->router->match(new Request('GET', '/files/readmeXtxt'));
+    }
+
+    public function testUnknownRouteThrowsNotFound(): void
+    {
+        try {
+            $this->router->match(new Request('GET', '/unknown'));
+            self::fail('Expected a NotFoundHttpException.');
+        } catch (NotFoundHttpException $exception) {
+            self::assertSame(404, $exception->statusCode());
+            self::assertStringContainsString('/unknown', $exception->getMessage());
+        }
     }
 
     public function testStaticRouteWinsOverDynamicRouteDeclaredFirst(): void

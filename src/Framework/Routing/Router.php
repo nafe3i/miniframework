@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MiniForge\Routing;
 
 use MiniForge\Exceptions\DuplicateRouteException;
+use MiniForge\Exceptions\NotFoundHttpException;
 use MiniForge\Http\Request;
 
 /**
@@ -73,8 +74,10 @@ final class Router
      * Ambiguity rule: static routes always win over dynamic ones (so
      * "/tasks/create" beats "/tasks/{id}" whatever the declaration order);
      * among dynamic routes, the first declared wins.
+     *
+     * @throws NotFoundHttpException When no route matches the path
      */
-    public function match(Request $request): ?RouteMatch
+    public function match(Request $request): RouteMatch
     {
         foreach ($this->orderedRoutes() as $route) {
             if ($route->method() !== $request->method()) {
@@ -87,7 +90,7 @@ final class Router
             }
         }
 
-        return null;
+        throw new NotFoundHttpException(sprintf('No route matches [%s %s].', $request->method(), $request->path()));
     }
 
     /**
