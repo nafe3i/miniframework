@@ -14,8 +14,14 @@ final class Request
     private readonly string $method;
     private readonly string $path;
 
-    public function __construct(string $method, string $path)
-    {
+    /**
+     * @param array<string, mixed> $query Query string parameters
+     */
+    public function __construct(
+        string $method,
+        string $path,
+        private readonly array $query = [],
+    ) {
         $this->method = strtoupper($method);
         $this->path = self::normalizePath($path);
     }
@@ -28,6 +34,22 @@ final class Request
     public function path(): string
     {
         return $this->path;
+    }
+
+    /**
+     * Returns a query string parameter, or the default when it is absent.
+     */
+    public function query(string $key, mixed $default = null): mixed
+    {
+        return $this->query[$key] ?? $default;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function allQuery(): array
+    {
+        return $this->query;
     }
 
     /**

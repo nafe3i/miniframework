@@ -35,4 +35,20 @@ final class RequestTest extends TestCase
     {
         self::assertSame($expected, (new Request('GET', $raw))->path());
     }
+
+    public function testExposesQueryParameters(): void
+    {
+        $request = new Request('GET', '/tasks', ['page' => '2']);
+
+        self::assertSame('2', $request->query('page'));
+        self::assertSame(['page' => '2'], $request->allQuery());
+    }
+
+    public function testReturnsDefaultForMissingQueryParameter(): void
+    {
+        $request = new Request('GET', '/tasks');
+
+        self::assertNull($request->query('page'));
+        self::assertSame('1', $request->query('page', '1'));
+    }
 }
