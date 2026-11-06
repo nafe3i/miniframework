@@ -21,7 +21,7 @@ final class PhpViewRenderer implements ViewRendererInterface
 {
     private const NAME = '/^[A-Za-z0-9_-]+(?:[\/.][A-Za-z0-9_-]+)*$/';
 
-    private const MAX_LAYOUT_DEPTH = 10;
+    private const MAX_NESTING_DEPTH = 20;
 
     private readonly string $basePath;
 
@@ -45,20 +45,22 @@ final class PhpViewRenderer implements ViewRendererInterface
             }
         }
 
-        if ($this->depth >= self::MAX_LAYOUT_DEPTH) {
-            throw new LogicException(sprintf('Layout nesting deeper than %d levels (recursive layout?) while rendering [%s].', self::MAX_LAYOUT_DEPTH, $view));
-        }
-
-        $template = new Template($this->render(...));
-        $content = $this->evaluate($this->resolve($view), $data, $template);
-
-        $layout = $template->layoutName();
-        if ($layout === null) {
-            return $content;
+        // Layouts and partials both render nested views: bound the nesting so
+        // a view that (indirectly) includes itself fails fast.
+        if ($this->depth >= self::MAX_NESTING_DEPTH) {
+            throw new LogicException(sprintf('View nesting deeper than %d levels (recursive layout or partial?) while rendering [%s].', self::MAX_NESTING_DEPTH, $view));
         }
 
         $this->depth++;
         try {
+            $template = new Template($this->render(...));
+            $content = $this->evaluate($this->resolve($view), $data, $template);
+
+            $layout = $template->layoutName();
+            if ($layout === null) {
+                return $content;
+            }
+
             return $this->render($layout, [...$data, ...$template->layoutData(), 'content' => $content]);
         } finally {
             $this->depth--;

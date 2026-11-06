@@ -68,6 +68,22 @@ final class PhpViewRendererTest extends TestCase
         self::assertSame("<ul><li>One</li>\n<li>Second &amp; last</li>\n</ul>\n", $html);
     }
 
+    public function testRecursivePartialIsDetected(): void
+    {
+        $level = ob_get_level();
+
+        try {
+            $this->views->render('partials/recursive');
+            self::fail('Expected a LogicException.');
+        } catch (\LogicException $exception) {
+            self::assertStringContainsString('recursive layout or partial', $exception->getMessage());
+        }
+
+        self::assertSame($level, ob_get_level());
+        // The renderer stays usable afterwards (depth counter restored).
+        self::assertSame("<h1>Static page</h1>\n", $this->views->render('hello'));
+    }
+
     public function testEscapeHelperHandlesScalarsAndNull(): void
     {
         $template = new Template(static fn (): string => '');
