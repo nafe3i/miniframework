@@ -23,6 +23,7 @@ use MiniForge\Core\Config;
 use MiniForge\Database\Connection;
 use MiniForge\Exceptions\ExceptionHandler;
 use MiniForge\Http\Kernel;
+use MiniForge\Middleware\SecurityHeadersMiddleware;
 use MiniForge\Routing\Dispatcher;
 use MiniForge\Routing\Router;
 use MiniForge\View\PhpViewRenderer;
@@ -55,6 +56,10 @@ return static function (?Config $config = null): Container {
         $c->get(Router::class),
         new Dispatcher($c),
         $c->get(ExceptionHandler::class),
+        [
+            // Global middleware, executed in this order.
+            new SecurityHeadersMiddleware(),
+        ],
     ));
 
     // Built lazily: commands or pages that never touch the database never open it.

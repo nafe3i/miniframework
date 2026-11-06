@@ -21,4 +21,10 @@ final class HomePageTest extends ApplicationTestCase
     {
         self::assertSame(404, $this->request('GET', '/does-not-exist')->status());
     }
+
+    public function testSecurityHeadersMiddlewareIsAppliedGlobally(): void
+    {
+        self::assertSame('nosniff', $this->request('GET', '/')->header('X-Content-Type-Options'));
+        self::assertSame('DENY', $this->request('GET', '/does-not-exist')->header('X-Frame-Options'));
+    }
 }
