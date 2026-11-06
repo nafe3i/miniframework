@@ -20,5 +20,9 @@ $this->layout('layouts/app', ['title' => $task->title()]);
 
     <div class="form__actions">
         <a class="button" href="/tasks/<?= $task->id() ?>/edit">Edit</a>
+        <form method="post" action="/tasks/<?= $task->id() ?>/delete"
+              onsubmit="return confirm('Delete this task?');">
+            <button class="button button--danger" type="submit">Delete</button>
+        </form>
     </div>
 </article>

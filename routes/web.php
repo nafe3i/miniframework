@@ -20,4 +20,5 @@ return static function (Router $router): void {
     $router->get('/tasks/{id}', [TaskController::class, 'show']);
     $router->get('/tasks/{id}/edit', [TaskController::class, 'edit']);
     $router->post('/tasks/{id}/update', [TaskController::class, 'update']);
+    $router->post('/tasks/{id}/delete', [TaskController::class, 'destroy']);
 };

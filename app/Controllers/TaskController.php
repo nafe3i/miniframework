@@ -24,6 +24,7 @@ final class TaskController
     private const NOTICES = [
         'created' => 'Task created.',
         'updated' => 'Task updated.',
+        'deleted' => 'Task deleted.',
     ];
 
     public function __construct(
@@ -36,6 +37,7 @@ final class TaskController
     {
         return $this->render('tasks/index', [
             'tasks' => $this->tasks->list(),
+            'notice' => $this->notice($request),
         ]);
     }
 
@@ -87,6 +89,13 @@ final class TaskController
         }
 
         return Response::redirect('/tasks/' . $task->id() . '?notice=updated');
+    }
+
+    public function destroy(Request $request, string $id): Response
+    {
+        $this->tasks->delete($this->taskId($id));
+
+        return Response::redirect('/tasks?notice=deleted');
     }
 
     /**
