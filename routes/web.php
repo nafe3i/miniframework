@@ -15,5 +15,7 @@ return static function (Router $router): void {
 
     // Task Manager
     $router->get('/tasks', [TaskController::class, 'index']);
+    $router->get('/tasks/create', [TaskController::class, 'create']);
+    $router->post('/tasks', [TaskController::class, 'store']);
     $router->get('/tasks/{id}', [TaskController::class, 'show']);
 };

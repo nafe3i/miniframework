@@ -177,6 +177,67 @@ code {
     overflow-wrap: anywhere;
 }
 
+.button--ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.button--ghost:hover { background: #eef0f7; }
+
+.button--danger { background: var(--danger); }
+.button--danger:hover { background: #b91c1c; }
+
+.alert {
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert--success { background: var(--success-bg); color: var(--success-text); }
+.alert--error { background: var(--error-bg); color: var(--error-text); }
+
+.form { display: grid; gap: 18px; }
+
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 600; }
+.required { color: var(--danger); }
+
+.field input,
+.field textarea,
+.field select {
+    width: 100%;
+    font: inherit;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+    border-color: transparent;
+}
+
+.field [aria-invalid="true"] { border-color: var(--danger); }
+
+.field__error {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.875rem;
+}
+
+.form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
 .footer {
     margin-top: 48px;
     padding-top: 16px;

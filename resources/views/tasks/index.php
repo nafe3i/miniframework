@@ -4,11 +4,13 @@ $this->layout('layouts/app', ['title' => 'Tasks']);
 ?>
 <div class="page-header">
     <h1>Tasks</h1>
+    <a class="button" href="/tasks/create">+ New task</a>
 </div>
 
 <?php if ($tasks === []): ?>
     <div class="empty card">
         <p>No tasks yet.</p>
+        <p><a href="/tasks/create">Create your first task</a></p>
     </div>
 <?php else: ?>
     <ul class="task-list">

@@ -4,6 +4,7 @@
  *
  * @var string $content Rendered child template (already escaped HTML)
  * @var string|null $title Page title
+ * @var string|null $notice Optional success message
  */
 ?>
 <!doctype html>
@@ -25,6 +26,9 @@
     </div>
 </header>
 <main class="container">
+<?php if (isset($notice) && is_string($notice)): ?>
+    <div class="alert alert--success" role="status"><?= $this->e($notice) ?></div>
+<?php endif; ?>
 <?= $content ?>
 </main>
 <footer class="footer container">
