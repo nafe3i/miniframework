@@ -37,11 +37,15 @@ final class PhpViewRenderer implements ViewRendererInterface
         $this->basePath = $real;
     }
 
+    /**
+     * @throws LogicException When views are nested too deeply (recursive layout or partial)
+     */
     public function render(string $view, array $data = []): string
     {
         foreach (array_keys($data) as $name) {
-            if (!is_string($name) || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name) !== 1 || $name === 'this' || str_starts_with($name, '__')) {
-                throw new InvalidArgumentException(sprintf('Invalid view variable name [%s].', (string) $name));
+            $name = (string) $name; // integer keys become "0", "1"... and fail the identifier check
+            if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name) !== 1 || $name === 'this' || str_starts_with($name, '__')) {
+                throw new InvalidArgumentException(sprintf('Invalid view variable name [%s].', $name));
             }
         }
 

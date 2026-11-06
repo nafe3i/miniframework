@@ -127,9 +127,9 @@ final class ContainerTest extends TestCase
     public function testContainerRecoversAfterFailedResolution(): void
     {
         $container = new Container();
-        $fail = true;
-        $container->bind('flaky', static function () use (&$fail): string {
-            if ($fail) {
+        $attempts = 0;
+        $container->bind('flaky', static function () use (&$attempts): string {
+            if (++$attempts === 1) {
                 throw new \RuntimeException('boom');
             }
 
@@ -140,7 +140,6 @@ final class ContainerTest extends TestCase
             $container->get('flaky');
         } catch (\RuntimeException) {
         }
-        $fail = false;
 
         self::assertSame('ok', $container->get('flaky'));
     }

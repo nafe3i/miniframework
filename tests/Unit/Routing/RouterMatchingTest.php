@@ -28,7 +28,6 @@ final class RouterMatchingTest extends TestCase
     {
         $match = $this->router->match(new Request('GET', '/tasks'));
 
-        self::assertNotNull($match);
         self::assertSame([DummyController::class, 'index'], $match->route()->action());
         self::assertSame([], $match->parameters());
     }
@@ -37,7 +36,6 @@ final class RouterMatchingTest extends TestCase
     {
         $match = $this->router->match(new Request('POST', '/tasks'));
 
-        self::assertNotNull($match);
         self::assertSame([DummyController::class, 'store'], $match->route()->action());
     }
 
@@ -45,7 +43,6 @@ final class RouterMatchingTest extends TestCase
     {
         $match = $this->router->match(new Request('GET', '/'));
 
-        self::assertNotNull($match);
         self::assertSame('home', $match->route()->action()[1]);
     }
 
@@ -53,7 +50,6 @@ final class RouterMatchingTest extends TestCase
     {
         $match = $this->router->match(new Request('GET', '/tasks/create/'));
 
-        self::assertNotNull($match);
         self::assertSame('create', $match->route()->action()[1]);
     }
 
@@ -63,7 +59,6 @@ final class RouterMatchingTest extends TestCase
 
         $match = $this->router->match(new Request('GET', '/tasks/42'));
 
-        self::assertNotNull($match);
         self::assertSame('show', $match->route()->action()[1]);
         self::assertSame(['id' => '42'], $match->parameters());
     }
@@ -74,7 +69,6 @@ final class RouterMatchingTest extends TestCase
 
         $match = $this->router->match(new Request('GET', '/projects/7/tasks/9'));
 
-        self::assertNotNull($match);
         self::assertSame(['project' => '7', 'task' => '9'], $match->parameters());
     }
 
@@ -140,7 +134,6 @@ final class RouterMatchingTest extends TestCase
 
         $match = $router->match(new Request('GET', '/tasks/create'));
 
-        self::assertNotNull($match);
         self::assertSame('create', $match->route()->action()[1]);
     }
 
@@ -152,7 +145,6 @@ final class RouterMatchingTest extends TestCase
 
         $match = $router->match(new Request('GET', '/a/b/b'));
 
-        self::assertNotNull($match);
         self::assertSame('first', $match->route()->action()[1]);
         self::assertSame(['x' => 'b'], $match->parameters());
     }

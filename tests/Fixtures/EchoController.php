@@ -36,7 +36,7 @@ final class EchoController
         return 'not a response';
     }
 
-    private function hidden(Request $request): Response
+    protected function hidden(Request $request): Response
     {
         return new Response('hidden');
     }

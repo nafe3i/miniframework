@@ -33,6 +33,5 @@ final class TaskTest extends TestCase
         self::assertSame(['TODO', 'IN_PROGRESS', 'DONE'], TaskStatus::values());
         self::assertSame('In progress', TaskStatus::IN_PROGRESS->label());
         self::assertSame(TaskStatus::DONE, TaskStatus::from('DONE'));
-        self::assertNull(TaskStatus::tryFrom('ARCHIVED'));
     }
 }

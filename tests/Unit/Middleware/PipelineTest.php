@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Middleware;
 
+use ArrayObject;
 use Closure;
 use MiniForge\Contracts\MiddlewareInterface;
 use MiniForge\Http\Request;
@@ -13,8 +14,13 @@ use PHPUnit\Framework\TestCase;
 
 final class PipelineTest extends TestCase
 {
-    /** @var list<string> */
-    private array $log = [];
+    /** @var ArrayObject<int, string> */
+    private ArrayObject $log;
+
+    protected function setUp(): void
+    {
+        $this->log = new ArrayObject();
+    }
 
     public function testWithoutMiddlewareCallsHandlerDirectly(): void
     {
@@ -33,7 +39,7 @@ final class PipelineTest extends TestCase
             return new Response('ok');
         });
 
-        self::assertSame(['A:before', 'B:before', 'handler', 'B:after', 'A:after'], $this->log);
+        self::assertSame(['A:before', 'B:before', 'handler', 'B:after', 'A:after'], $this->log->getArrayCopy());
     }
 
     public function testMiddlewareCanPassModifiedRequestToNext(): void
@@ -86,18 +92,16 @@ final class PipelineTest extends TestCase
 
         self::assertSame(403, $response->status());
         self::assertSame('blocked', $response->content());
-        self::assertSame(['A:before', 'A:after'], $this->log, 'Neither C nor the handler may run.');
+        self::assertSame(['A:before', 'A:after'], $this->log->getArrayCopy(), 'Neither C nor the handler may run.');
     }
 
     private function tracer(string $name): MiddlewareInterface
     {
-        $log = &$this->log;
-
-        return new class ($name, $log) implements MiddlewareInterface {
+        return new class ($name, $this->log) implements MiddlewareInterface {
             /**
-             * @param list<string> $log
+             * @param ArrayObject<int, string> $log
              */
-            public function __construct(private readonly string $name, private array &$log)
+            public function __construct(private readonly string $name, private readonly ArrayObject $log)
             {
             }
 

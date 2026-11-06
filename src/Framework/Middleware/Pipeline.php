@@ -25,7 +25,7 @@ final class Pipeline
      */
     public function __construct(array $middleware = [])
     {
-        $this->middleware = array_values($middleware);
+        $this->middleware = $middleware;
     }
 
     /**

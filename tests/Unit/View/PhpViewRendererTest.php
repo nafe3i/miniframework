@@ -153,7 +153,6 @@ final class PhpViewRendererTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        // @phpstan-ignore-next-line intentionally invalid
         $this->views->render('hello', $data);
     }
 

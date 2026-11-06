@@ -59,7 +59,9 @@ final class Validator
             }
 
             foreach ($fieldRules as $rule) {
-                [$name, $argument] = array_pad(explode(':', $rule, 2), 2, null);
+                $parts = explode(':', $rule, 2);
+                $name = $parts[0];
+                $argument = $parts[1] ?? null;
 
                 $message = $this->check($field, $value, $name, $argument);
                 if ($message !== null) {
