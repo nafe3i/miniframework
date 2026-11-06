@@ -113,6 +113,40 @@ final class ValidatorTest extends TestCase
         );
     }
 
+    public function testMaxLengthAcceptsBoundaryValue(): void
+    {
+        self::assertSame([], $this->validator->errors(['title' => 'abcde'], ['title' => 'max:5']));
+    }
+
+    public function testExcessiveLengthIsRejected(): void
+    {
+        self::assertSame(
+            ['title' => ['The title may not be longer than 5 characters.']],
+            $this->validator->errors(['title' => 'abcdef'], ['title' => 'required|string|max:5']),
+        );
+    }
+
+    public function testMaxCountsCharactersNotBytes(): void
+    {
+        self::assertSame([], $this->validator->errors(['title' => 'ééééé'], ['title' => 'max:5']));
+        self::assertArrayHasKey('title', $this->validator->errors(['title' => 'éééééé'], ['title' => 'max:5']));
+    }
+
+    public function testMaxRejectsNonStringValues(): void
+    {
+        self::assertSame(
+            ['title' => ['The title must be a string.']],
+            $this->validator->errors(['title' => ['a']], ['title' => 'max:5']),
+        );
+    }
+
+    public function testMaxWithoutValidArgumentIsAProgrammingError(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->validator->errors(['title' => 'x'], ['title' => 'max:abc']);
+    }
+
     public function testUnknownRuleIsAProgrammingError(): void
     {
         $this->expectException(InvalidArgumentException::class);
