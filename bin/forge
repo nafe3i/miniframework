@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/*
+ * MiniForge console.
+ *
+ *     php bin/forge              list commands
+ *     php bin/forge route:list   list declared routes
+ */
+
+use MiniForge\Console\Application;
+use MiniForge\Console\Commands\RouteListCommand;
+use MiniForge\Console\Output;
+use MiniForge\Routing\Router;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+$container = (require dirname(__DIR__) . '/bootstrap/app.php')();
+
+$console = new Application([
+    new RouteListCommand($container->get(Router::class)),
+]);
+
+/** @var list<string> $argv */
+exit($console->run($argv, new Output()));
