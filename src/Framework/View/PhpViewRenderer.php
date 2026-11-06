@@ -49,7 +49,7 @@ final class PhpViewRenderer implements ViewRendererInterface
             throw new LogicException(sprintf('Layout nesting deeper than %d levels (recursive layout?) while rendering [%s].', self::MAX_LAYOUT_DEPTH, $view));
         }
 
-        $template = new Template();
+        $template = new Template($this->render(...));
         $content = $this->evaluate($this->resolve($view), $data, $template);
 
         $layout = $template->layoutName();

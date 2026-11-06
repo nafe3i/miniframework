@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MiniForge\View;
 
+use Closure;
 use Stringable;
 
 /**
@@ -14,10 +15,33 @@ use Stringable;
  */
 final class Template
 {
+    /** @var Closure(string, array<string, mixed>): string */
+    private readonly Closure $renderer;
+
     private ?string $layout = null;
 
     /** @var array<string, mixed> */
     private array $layoutData = [];
+
+    /**
+     * @param Closure(string, array<string, mixed>): string $renderer Renders another view
+     */
+    public function __construct(Closure $renderer)
+    {
+        $this->renderer = $renderer;
+    }
+
+    /**
+     * Renders another view (a partial) and returns its HTML, to be printed
+     * raw: `<?= $this->insert('tasks/_form', ['task' => $task]) ?>`.
+     * The partial only sees the variables passed explicitly.
+     *
+     * @param array<string, mixed> $data
+     */
+    public function insert(string $view, array $data = []): string
+    {
+        return ($this->renderer)($view, $data);
+    }
 
     /**
      * Declares that the current template is wrapped by a layout view.

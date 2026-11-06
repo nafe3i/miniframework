@@ -61,9 +61,16 @@ final class PhpViewRendererTest extends TestCase
         self::assertStringContainsString('<p><em>trusted</em></p>', $html);
     }
 
+    public function testInsertsPartialWithOnlyExplicitData(): void
+    {
+        $html = $this->views->render('with-partial', ['first' => 'One']);
+
+        self::assertSame("<ul><li>One</li>\n<li>Second &amp; last</li>\n</ul>\n", $html);
+    }
+
     public function testEscapeHelperHandlesScalarsAndNull(): void
     {
-        $template = new Template();
+        $template = new Template(static fn (): string => '');
 
         self::assertSame('42', $template->e(42));
         self::assertSame('', $template->e(null));
