@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use MiniForge\Contracts\ViewRendererInterface;
 use MiniForge\Exceptions\ViewNotFoundException;
 use MiniForge\View\PhpViewRenderer;
+use MiniForge\View\Template;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -42,6 +43,31 @@ final class PhpViewRendererTest extends TestCase
         $html = $this->views->render('greeting', ['name' => 'Ada', 'items' => [1, 2, 3]]);
 
         self::assertSame("<p>Ada has 3 items</p>\n", $html);
+    }
+
+    public function testEscapeHelperNeutralizesHtmlInTextAndAttributes(): void
+    {
+        $html = $this->views->render('escaped', [
+            'title' => '"><script>alert(\'x\')</script>',
+            'raw' => '<em>trusted</em>',
+        ]);
+
+        self::assertStringContainsString(
+            'title="&quot;&gt;&lt;script&gt;alert(&apos;x&apos;)&lt;/script&gt;"',
+            $html,
+        );
+        self::assertStringNotContainsString('<script>', $html);
+        // Escaping is explicit: a value printed without $this->e() is output as-is.
+        self::assertStringContainsString('<p><em>trusted</em></p>', $html);
+    }
+
+    public function testEscapeHelperHandlesScalarsAndNull(): void
+    {
+        $template = new Template();
+
+        self::assertSame('42', $template->e(42));
+        self::assertSame('', $template->e(null));
+        self::assertSame('a &amp; b', $template->e('a & b'));
     }
 
     public function testDataDoesNotLeakBetweenRenders(): void

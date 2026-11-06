@@ -40,7 +40,7 @@ final class PhpViewRenderer implements ViewRendererInterface
             }
         }
 
-        return $this->evaluate($this->resolve($view), $data);
+        return $this->evaluate($this->resolve($view), $data, new Template());
     }
 
     public function exists(string $view): bool
@@ -75,20 +75,20 @@ final class PhpViewRenderer implements ViewRendererInterface
 
     /**
      * Executes the template in an isolated scope, with each data entry exposed
-     * as a local variable, and captures its output.
+     * as a local variable and a Template helper as $this, and captures its output.
      *
      * @param array<string, mixed> $data
      */
-    private function evaluate(string $file, array $data): string
+    private function evaluate(string $file, array $data, Template $template): string
     {
         $level = ob_get_level();
         ob_start();
 
         try {
-            (static function (string $__file, array $__data): void {
+            (function (string $__file, array $__data): void {
                 extract($__data, EXTR_SKIP);
                 include $__file;
-            })($file, $data);
+            })->call($template, $file, $data);
         } catch (Throwable $exception) {
             while (ob_get_level() > $level) {
                 ob_end_clean();
