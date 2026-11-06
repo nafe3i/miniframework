@@ -75,4 +75,44 @@ final class RequestTest extends TestCase
         self::assertSame('from-query', $request->query('title'));
         self::assertSame('from-body', $request->input('title'));
     }
+
+    public function testHeadersAreCaseInsensitive(): void
+    {
+        $request = new Request('GET', '/', [], [], ['Accept' => 'application/json']);
+
+        self::assertSame('application/json', $request->header('accept'));
+        self::assertSame('application/json', $request->header('ACCEPT'));
+        self::assertNull($request->header('X-Missing'));
+    }
+
+    public function testBuildsFromGlobals(): void
+    {
+        $request = Request::fromGlobals(
+            [
+                'REQUEST_METHOD' => 'post',
+                'REQUEST_URI' => '/tasks/42/update?redirect=1',
+                'HTTP_ACCEPT' => 'text/html',
+                'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+                'CONTENT_TYPE' => 'application/x-www-form-urlencoded',
+            ],
+            ['redirect' => '1'],
+            ['title' => 'Updated'],
+        );
+
+        self::assertSame('POST', $request->method());
+        self::assertSame('/tasks/42/update', $request->path());
+        self::assertSame('1', $request->query('redirect'));
+        self::assertSame('Updated', $request->input('title'));
+        self::assertSame('text/html', $request->header('Accept'));
+        self::assertSame('XMLHttpRequest', $request->header('X-Requested-With'));
+        self::assertSame('application/x-www-form-urlencoded', $request->header('Content-Type'));
+    }
+
+    public function testFromGlobalsFallsBackToSafeDefaults(): void
+    {
+        $request = Request::fromGlobals([], [], []);
+
+        self::assertSame('GET', $request->method());
+        self::assertSame('/', $request->path());
+    }
 }
