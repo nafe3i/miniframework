@@ -70,6 +70,31 @@ final class PhpViewRendererTest extends TestCase
         self::assertSame('a &amp; b', $template->e('a & b'));
     }
 
+    public function testWrapsTemplateInLayout(): void
+    {
+        $html = $this->views->render('with-layout', ['message' => 'Hi & bye']);
+
+        self::assertSame(
+            "<html><title>Page &lt;1&gt;</title><body><main>Hi &amp; bye</main>\n</body></html>\n",
+            $html,
+        );
+    }
+
+    public function testLayoutReceivesChildDataAndDefaults(): void
+    {
+        $html = $this->views->render('layouts/main', ['content' => '<p>x</p>']);
+
+        self::assertSame("<html><title>Default</title><body><p>x</p></body></html>\n", $html);
+    }
+
+    public function testRecursiveLayoutIsDetected(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('recursive layout');
+
+        $this->views->render('recursive');
+    }
+
     public function testDataDoesNotLeakBetweenRenders(): void
     {
         $this->views->render('greeting', ['name' => 'Ada', 'items' => []]);

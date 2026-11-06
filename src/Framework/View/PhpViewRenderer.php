@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MiniForge\View;
 
 use InvalidArgumentException;
+use LogicException;
 use MiniForge\Contracts\ViewRendererInterface;
 use MiniForge\Exceptions\ViewNotFoundException;
 use Throwable;
@@ -20,7 +21,11 @@ final class PhpViewRenderer implements ViewRendererInterface
 {
     private const NAME = '/^[A-Za-z0-9_-]+(?:[\/.][A-Za-z0-9_-]+)*$/';
 
+    private const MAX_LAYOUT_DEPTH = 10;
+
     private readonly string $basePath;
+
+    private int $depth = 0;
 
     public function __construct(string $basePath)
     {
@@ -40,7 +45,24 @@ final class PhpViewRenderer implements ViewRendererInterface
             }
         }
 
-        return $this->evaluate($this->resolve($view), $data, new Template());
+        if ($this->depth >= self::MAX_LAYOUT_DEPTH) {
+            throw new LogicException(sprintf('Layout nesting deeper than %d levels (recursive layout?) while rendering [%s].', self::MAX_LAYOUT_DEPTH, $view));
+        }
+
+        $template = new Template();
+        $content = $this->evaluate($this->resolve($view), $data, $template);
+
+        $layout = $template->layoutName();
+        if ($layout === null) {
+            return $content;
+        }
+
+        $this->depth++;
+        try {
+            return $this->render($layout, [...$data, ...$template->layoutData(), 'content' => $content]);
+        } finally {
+            $this->depth--;
+        }
     }
 
     public function exists(string $view): bool
