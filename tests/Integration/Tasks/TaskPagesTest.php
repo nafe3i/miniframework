@@ -35,4 +35,33 @@ final class TaskPagesTest extends ApplicationTestCase
         self::assertStringContainsString('In progress', $html);
         self::assertStringContainsString('Some details', $html);
     }
+
+    public function testShowDisplaysOneTaskFromDynamicRoute(): void
+    {
+        $this->db()->execute('INSERT INTO tasks (title, description) VALUES (?, ?)', ['First', 'Line 1']);
+        $this->db()->execute('INSERT INTO tasks (title, description) VALUES (?, ?)', ['Second', "Line A\nLine <B>"]);
+
+        $response = $this->request('GET', '/tasks/2');
+
+        self::assertSame(200, $response->status());
+        self::assertStringContainsString('<h1>Second</h1>', $response->content());
+        self::assertStringContainsString('Line A<br />', $response->content());
+        self::assertStringContainsString('Line &lt;B&gt;', $response->content());
+        self::assertStringNotContainsString('First', $response->content());
+    }
+
+    public function testShowUnknownTaskReturns404(): void
+    {
+        $response = $this->request('GET', '/tasks/999');
+
+        self::assertSame(404, $response->status());
+        self::assertStringContainsString('Task #999 was not found.', $response->content());
+    }
+
+    public function testShowNonNumericIdReturns404(): void
+    {
+        self::assertSame(404, $this->request('GET', '/tasks/abc')->status());
+        self::assertSame(404, $this->request('GET', '/tasks/0')->status());
+        self::assertSame(404, $this->request('GET', '/tasks/-1')->status());
+    }
 }

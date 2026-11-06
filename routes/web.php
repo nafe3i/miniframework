@@ -15,4 +15,5 @@ return static function (Router $router): void {
 
     // Task Manager
     $router->get('/tasks', [TaskController::class, 'index']);
+    $router->get('/tasks/{id}', [TaskController::class, 'show']);
 };

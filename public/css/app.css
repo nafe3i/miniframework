@@ -153,6 +153,30 @@ code {
 .badge--in_progress { background: #fffbeb; color: #92400e; }
 .badge--done { background: #ecfdf5; color: #065f46; }
 
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+
+.breadcrumb { margin: 0 0 12px; }
+.breadcrumb a { text-decoration: none; }
+
+.task-detail__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.task-detail__header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+    overflow-wrap: anywhere;
+}
+
+.task-detail__description {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .footer {
     margin-top: 48px;
     padding-top: 16px;

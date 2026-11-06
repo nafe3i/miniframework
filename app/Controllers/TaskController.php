@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\TaskNotFoundException;
 use App\Services\TaskService;
 use MiniForge\Contracts\ViewRendererInterface;
 use MiniForge\Http\Request;
@@ -26,6 +27,24 @@ final class TaskController
         return $this->render('tasks/index', [
             'tasks' => $this->tasks->list(),
         ]);
+    }
+
+    public function show(Request $request, string $id): Response
+    {
+        $task = $this->tasks->get($this->taskId($id));
+
+        return $this->render('tasks/show', ['task' => $task]);
+    }
+
+    /**
+     * Route parameters are strings: anything that is not a positive integer
+     * cannot be a task identifier, hence a 404.
+     */
+    private function taskId(string $id): int
+    {
+        $value = filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        return $value === false ? throw TaskNotFoundException::withId($id) : $value;
     }
 
     /**
