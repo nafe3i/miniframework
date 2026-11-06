@@ -56,6 +56,8 @@ final class TaskPagesTest extends ApplicationTestCase
 
         self::assertSame(404, $response->status());
         self::assertStringContainsString('Task #999 was not found.', $response->content());
+        self::assertStringContainsString('class="card error-page"', $response->content(), 'Rendered with the application layout.');
+        self::assertStringContainsString('<title>404 Not Found · MiniForge</title>', $response->content());
     }
 
     public function testShowNonNumericIdReturns404(): void

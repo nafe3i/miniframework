@@ -238,6 +238,24 @@ code {
     gap: 10px;
 }
 
+.error-page { text-align: center; }
+.error-page h1 { margin-top: 0; }
+
+.error-page__status {
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.error-page__message {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    text-align: left;
+    color: var(--muted);
+    font-family: inherit;
+}
+
 .footer {
     margin-top: 48px;
     padding-top: 16px;

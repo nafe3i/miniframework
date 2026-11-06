@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Exceptions;
 
+use MiniForge\Contracts\ViewRendererInterface;
 use MiniForge\Exceptions\ExceptionHandler;
 use MiniForge\Exceptions\HttpException;
 use MiniForge\Exceptions\MethodNotAllowedHttpException;
 use MiniForge\Exceptions\NotFoundHttpException;
+use MiniForge\View\PhpViewRenderer;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
@@ -61,10 +63,41 @@ final class ExceptionHandlerTest extends TestCase
         self::assertStringContainsString('Boom &lt;b&gt;', $response->content());
     }
 
-    private function handler(bool $debug = false): ExceptionHandler
+    public function testUsesApplicationErrorViewWhenAvailable(): void
+    {
+        $handler = $this->handler(views: new PhpViewRenderer(__DIR__ . '/../../Fixtures/error-views'));
+
+        $response = $handler->render(new NotFoundHttpException('Task #3 <gone>'));
+
+        self::assertSame(404, $response->status());
+        self::assertSame("<main data-status=\"404\">Not Found: Task #3 &lt;gone&gt;</main>\n", $response->content());
+    }
+
+    public function testFallsBackToBuiltInPageWithoutErrorView(): void
+    {
+        $handler = $this->handler(views: new PhpViewRenderer(__DIR__ . '/../../Fixtures/views'));
+
+        $response = $handler->render(new NotFoundHttpException('Nope'));
+
+        self::assertStringContainsString('<h1>404 Not Found</h1>', $response->content());
+    }
+
+    public function testFallsBackWhenErrorViewItselfFails(): void
+    {
+        $handler = $this->handler(views: new PhpViewRenderer(__DIR__ . '/../../Fixtures/broken-error-views'));
+
+        $response = $handler->render(new NotFoundHttpException('Nope'));
+
+        self::assertSame(404, $response->status());
+        self::assertStringContainsString('<h1>404 Not Found</h1>', $response->content());
+        self::assertCount(1, $this->reported);
+        self::assertSame('error view is broken', $this->reported[0]->getMessage());
+    }
+
+    private function handler(bool $debug = false, ?ViewRendererInterface $views = null): ExceptionHandler
     {
         return new ExceptionHandler($debug, function (Throwable $e): void {
             $this->reported[] = $e;
-        });
+        }, $views);
     }
 }

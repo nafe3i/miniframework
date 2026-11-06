@@ -45,8 +45,11 @@ return static function (?Config $config = null): Container {
     $container->singleton(ViewRendererInterface::class, static fn (): ViewRendererInterface
         => new PhpViewRenderer($basePath . '/resources/views'));
 
-    $container->singleton(ExceptionHandler::class, static fn (ContainerInterface $c): ExceptionHandler
-        => new ExceptionHandler((bool) $c->get(Config::class)->get('app.debug', false)));
+    $container->singleton(ExceptionHandler::class, static fn (ContainerInterface $c): ExceptionHandler => new ExceptionHandler(
+        (bool) $c->get(Config::class)->get('app.debug', false),
+        null,
+        $c->get(ViewRendererInterface::class),
+    ));
 
     $container->singleton(Kernel::class, static fn (ContainerInterface $c): Kernel => new Kernel(
         $c->get(Router::class),
