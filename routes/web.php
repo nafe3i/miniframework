@@ -18,4 +18,6 @@ return static function (Router $router): void {
     $router->get('/tasks/create', [TaskController::class, 'create']);
     $router->post('/tasks', [TaskController::class, 'store']);
     $router->get('/tasks/{id}', [TaskController::class, 'show']);
+    $router->get('/tasks/{id}/edit', [TaskController::class, 'edit']);
+    $router->post('/tasks/{id}/update', [TaskController::class, 'update']);
 };

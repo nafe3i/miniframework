@@ -23,6 +23,7 @@ final class TaskController
     /** Whitelisted flash-like notices, selected by the "notice" query parameter. */
     private const NOTICES = [
         'created' => 'Task created.',
+        'updated' => 'Task updated.',
     ];
 
     public function __construct(
@@ -62,6 +63,30 @@ final class TaskController
         }
 
         return Response::redirect('/tasks/' . $task->id() . '?notice=created');
+    }
+
+    public function edit(Request $request, string $id): Response
+    {
+        $task = $this->tasks->get($this->taskId($id));
+
+        return $this->form('tasks/edit', [
+            'title' => $task->title(),
+            'description' => $task->description() ?? '',
+            'status' => $task->status()->value,
+        ], extra: ['task' => $task]);
+    }
+
+    public function update(Request $request, string $id): Response
+    {
+        $task = $this->tasks->get($this->taskId($id));
+
+        try {
+            $this->tasks->update($task->id(), $request->only(self::FIELDS));
+        } catch (ValidationException $exception) {
+            return $this->form('tasks/edit', $this->old($request), $exception->errors(), 422, ['task' => $task]);
+        }
+
+        return Response::redirect('/tasks/' . $task->id() . '?notice=updated');
     }
 
     /**

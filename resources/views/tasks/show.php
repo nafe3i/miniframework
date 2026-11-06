@@ -17,4 +17,8 @@ $this->layout('layouts/app', ['title' => $task->title()]);
     <?php endif; ?>
 
     <p class="muted small">Task #<?= $task->id() ?></p>
+
+    <div class="form__actions">
+        <a class="button" href="/tasks/<?= $task->id() ?>/edit">Edit</a>
+    </div>
 </article>
