@@ -1,0 +1,90 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Container;
+
+use ArrayIterator;
+use Countable;
+use MiniForge\Container\Container;
+use MiniForge\Contracts\ContainerInterface;
+use MiniForge\Exceptions\ContainerException;
+use MiniForge\Exceptions\ServiceNotFoundException;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+
+final class ContainerTest extends TestCase
+{
+    public function testImplementsContainerContract(): void
+    {
+        self::assertInstanceOf(ContainerInterface::class, new Container());
+    }
+
+    public function testRegistersBinding(): void
+    {
+        $container = new Container();
+        self::assertFalse($container->has('logger'));
+
+        $container->bind('logger', static fn (): stdClass => new stdClass());
+
+        self::assertTrue($container->has('logger'));
+    }
+
+    public function testResolvesBindingThroughFactory(): void
+    {
+        $container = new Container();
+        $container->bind('config', static fn (): array => ['debug' => true]);
+
+        self::assertSame(['debug' => true], $container->get('config'));
+    }
+
+    public function testBindingProducesNewInstanceEachTime(): void
+    {
+        $container = new Container();
+        $container->bind(stdClass::class, static fn (): stdClass => new stdClass());
+
+        self::assertNotSame($container->get(stdClass::class), $container->get(stdClass::class));
+    }
+
+    public function testBindsInterfaceToImplementation(): void
+    {
+        $container = new Container();
+        $container->bind(Countable::class, static fn (): ArrayIterator => new ArrayIterator([1, 2, 3]));
+
+        $service = $container->get(Countable::class);
+
+        self::assertInstanceOf(Countable::class, $service);
+        self::assertCount(3, $service);
+    }
+
+    public function testFactoryReceivesContainerToResolveDependencies(): void
+    {
+        $container = new Container();
+        $container->bind('greeting', static fn (): string => 'Hello');
+        $container->bind('message', static fn (ContainerInterface $c): string => $c->get('greeting') . ', world');
+
+        self::assertSame('Hello, world', $container->get('message'));
+    }
+
+    public function testRebindingReplacesPreviousBinding(): void
+    {
+        $container = new Container();
+        $container->bind('value', static fn (): int => 1);
+        $container->bind('value', static fn (): int => 2);
+
+        self::assertSame(2, $container->get('value'));
+    }
+
+    public function testMissingServiceThrowsClearException(): void
+    {
+        $container = new Container();
+
+        try {
+            $container->get('App\\Missing');
+            self::fail('Expected a ServiceNotFoundException.');
+        } catch (ServiceNotFoundException $exception) {
+            self::assertInstanceOf(ContainerException::class, $exception);
+            self::assertStringContainsString('App\\Missing', $exception->getMessage());
+        }
+    }
+}
