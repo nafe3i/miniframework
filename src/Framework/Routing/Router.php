@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MiniForge\Routing;
 
 use MiniForge\Exceptions\DuplicateRouteException;
+use MiniForge\Http\Request;
 
 /**
  * Stores route definitions and finds the route matching a request.
@@ -64,5 +65,24 @@ final class Router
     public function routes(): array
     {
         return $this->routes;
+    }
+
+    /**
+     * Finds the route matching the request method and path.
+     */
+    public function match(Request $request): ?RouteMatch
+    {
+        foreach ($this->routes as $route) {
+            if ($route->method() !== $request->method()) {
+                continue;
+            }
+
+            $parameters = $route->matchPath($request->path());
+            if ($parameters !== null) {
+                return new RouteMatch($route, $parameters);
+            }
+        }
+
+        return null;
     }
 }

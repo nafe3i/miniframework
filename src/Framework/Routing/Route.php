@@ -79,6 +79,16 @@ final class Route
     }
 
     /**
+     * Tests the route pattern against a normalized request path.
+     *
+     * @return array<string, string>|null Extracted parameters, or null when the path does not match.
+     */
+    public function matchPath(string $path): ?array
+    {
+        return $path === $this->path ? [] : null;
+    }
+
+    /**
      * Pattern with parameter names erased: "/tasks/{id}" and "/tasks/{task}"
      * share the signature "/tasks/{}" and would therefore collide.
      */
