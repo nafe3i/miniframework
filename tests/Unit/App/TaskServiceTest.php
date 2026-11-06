@@ -8,6 +8,7 @@ use App\Entities\TaskStatus;
 use App\Exceptions\TaskNotFoundException;
 use App\Services\TaskService;
 use MiniForge\Exceptions\ValidationException;
+use MiniForge\Validation\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\InMemoryTaskRepository;
@@ -23,7 +24,7 @@ final class TaskServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = new InMemoryTaskRepository();
-        $this->service = new TaskService($this->repository);
+        $this->service = new TaskService($this->repository, new Validator());
     }
 
     public function testCreatesTaskWithNormalizedInput(): void

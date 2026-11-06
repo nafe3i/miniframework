@@ -67,7 +67,8 @@ final class TaskCreationTest extends ApplicationTestCase
         $response = $this->request('POST', '/tasks', ['title' => ['injected']]);
 
         self::assertSame(422, $response->status());
-        self::assertStringContainsString('The title is required.', $response->content());
+        self::assertStringContainsString('The title must be a string.', $response->content());
+        self::assertSame([], $this->db()->select('SELECT * FROM tasks'));
     }
 
     public function testUnexpectedFieldsAreIgnored(): void

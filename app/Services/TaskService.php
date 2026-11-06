@@ -9,6 +9,7 @@ use App\Entities\Task;
 use App\Entities\TaskStatus;
 use App\Exceptions\TaskNotFoundException;
 use MiniForge\Exceptions\ValidationException;
+use MiniForge\Validation\Validator;
 
 /**
  * Application service holding the task business rules.
@@ -17,8 +18,10 @@ use MiniForge\Exceptions\ValidationException;
  */
 final class TaskService
 {
-    public function __construct(private readonly TaskRepositoryInterface $tasks)
-    {
+    public function __construct(
+        private readonly TaskRepositoryInterface $tasks,
+        private readonly Validator $validator,
+    ) {
     }
 
     /**
@@ -88,39 +91,29 @@ final class TaskService
      */
     private function validate(array $input): array
     {
-        $errors = [];
-
-        $title = $input['title'] ?? null;
-        if (!is_string($title) || trim($title) === '') {
-            $errors['title'][] = 'The title is required.';
-        } elseif (mb_strlen(trim($title)) > Task::TITLE_MAX_LENGTH) {
-            $errors['title'][] = sprintf('The title may not be longer than %d characters.', Task::TITLE_MAX_LENGTH);
-        }
-
-        $description = $input['description'] ?? null;
-        if ($description !== null && !is_string($description)) {
-            $errors['description'][] = 'The description must be text.';
-        } elseif (is_string($description) && mb_strlen(trim($description)) > Task::DESCRIPTION_MAX_LENGTH) {
-            $errors['description'][] = sprintf('The description may not be longer than %d characters.', Task::DESCRIPTION_MAX_LENGTH);
-        }
-
-        $status = $input['status'] ?? TaskStatus::TODO->value;
-        if (!is_string($status) || TaskStatus::tryFrom($status) === null) {
-            $errors['status'][] = 'The selected status is invalid.';
-        }
-
-        if ($errors !== []) {
-            throw new ValidationException($errors);
-        }
-
-        /** @var string $title */
-        /** @var string $status */
-        $description = is_string($description) ? trim($description) : '';
-
-        return [
-            'title' => trim($title),
-            'description' => $description === '' ? null : $description,
-            'status' => TaskStatus::from($status),
+        // Normalize first so the length rules apply to what will be stored.
+        $data = [
+            'title' => self::trimmed($input['title'] ?? null),
+            'description' => self::trimmed($input['description'] ?? null),
+            'status' => $input['status'] ?? TaskStatus::TODO->value,
         ];
+
+        $this->validator->validate($data, [
+            'title' => 'required|string|max:' . Task::TITLE_MAX_LENGTH,
+            'description' => 'string|max:' . Task::DESCRIPTION_MAX_LENGTH,
+            'status' => 'required|in:' . implode(',', TaskStatus::values()),
+        ]);
+
+        /** @var array{title: string, description: ?string, status: string} $data */
+        return [
+            'title' => $data['title'],
+            'description' => $data['description'] === '' ? null : $data['description'],
+            'status' => TaskStatus::from($data['status']),
+        ];
+    }
+
+    private static function trimmed(mixed $value): mixed
+    {
+        return is_string($value) ? trim($value) : $value;
     }
 }

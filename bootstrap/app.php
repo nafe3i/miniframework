@@ -26,6 +26,7 @@ use MiniForge\Http\Kernel;
 use MiniForge\Middleware\SecurityHeadersMiddleware;
 use MiniForge\Routing\Dispatcher;
 use MiniForge\Routing\Router;
+use MiniForge\Validation\Validator;
 use MiniForge\View\PhpViewRenderer;
 
 return static function (?Config $config = null): Container {
@@ -74,8 +75,12 @@ return static function (?Config $config = null): Container {
     $container->singleton(TaskRepositoryInterface::class, static fn (ContainerInterface $c): TaskRepositoryInterface
         => new PdoTaskRepository($c->get(Connection::class)));
 
-    $container->singleton(TaskService::class, static fn (ContainerInterface $c): TaskService
-        => new TaskService($c->get(TaskRepositoryInterface::class)));
+    $container->singleton(Validator::class, static fn (): Validator => new Validator());
+
+    $container->singleton(TaskService::class, static fn (ContainerInterface $c): TaskService => new TaskService(
+        $c->get(TaskRepositoryInterface::class),
+        $c->get(Validator::class),
+    ));
 
     // --- Application controllers --------------------------------------------
     $container->bind(HomeController::class, static fn (ContainerInterface $c): HomeController => new HomeController(
