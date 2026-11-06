@@ -522,5 +522,4 @@ commands actually executed.
 
 ## 13. License
 
-MIT, as declared in `composer.json`. A `LICENSE` file naming the copyright holder
-should be added by the owner.
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Mohamed Amine Nafiai.
