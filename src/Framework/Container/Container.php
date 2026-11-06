@@ -6,6 +6,7 @@ namespace MiniForge\Container;
 
 use Closure;
 use MiniForge\Contracts\ContainerInterface;
+use MiniForge\Exceptions\ContainerException;
 use MiniForge\Exceptions\ServiceNotFoundException;
 
 /**
@@ -22,6 +23,9 @@ final class Container implements ContainerInterface
 
     /** @var array<string, mixed> Already built shared instances. */
     private array $instances = [];
+
+    /** @var array<string, true> Identifiers currently being built (cycle detection). */
+    private array $resolving = [];
 
     /**
      * Registers a factory producing a new instance on every resolution.
@@ -70,7 +74,20 @@ final class Container implements ContainerInterface
             throw ServiceNotFoundException::forId($id);
         }
 
-        $service = ($this->factories[$id])($this);
+        if (isset($this->resolving[$id])) {
+            throw new ContainerException(sprintf(
+                'Circular dependency detected: %s -> %s.',
+                implode(' -> ', array_keys($this->resolving)),
+                $id,
+            ));
+        }
+
+        $this->resolving[$id] = true;
+        try {
+            $service = ($this->factories[$id])($this);
+        } finally {
+            unset($this->resolving[$id]);
+        }
 
         if (isset($this->shared[$id])) {
             $this->instances[$id] = $service;

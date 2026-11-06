@@ -112,6 +112,39 @@ final class ContainerTest extends TestCase
         self::assertNotSame($container->get('service'), $container->get('service'));
     }
 
+    public function testDetectsCircularDependencies(): void
+    {
+        $container = new Container();
+        $container->bind('a', static fn (ContainerInterface $c): mixed => $c->get('b'));
+        $container->bind('b', static fn (ContainerInterface $c): mixed => $c->get('a'));
+
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage('Circular dependency detected: a -> b -> a.');
+
+        $container->get('a');
+    }
+
+    public function testContainerRecoversAfterFailedResolution(): void
+    {
+        $container = new Container();
+        $fail = true;
+        $container->bind('flaky', static function () use (&$fail): string {
+            if ($fail) {
+                throw new \RuntimeException('boom');
+            }
+
+            return 'ok';
+        });
+
+        try {
+            $container->get('flaky');
+        } catch (\RuntimeException) {
+        }
+        $fail = false;
+
+        self::assertSame('ok', $container->get('flaky'));
+    }
+
     public function testMissingServiceThrowsClearException(): void
     {
         $container = new Container();
