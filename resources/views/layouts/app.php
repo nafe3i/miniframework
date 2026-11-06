@@ -20,6 +20,7 @@
         <a class="brand" href="/"><span class="brand__mark">⚒</span> MiniForge</a>
         <nav class="nav">
             <a href="/">Home</a>
+            <a href="/tasks">Tasks</a>
         </nav>
     </div>
 </header>

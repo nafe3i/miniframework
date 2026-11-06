@@ -9,4 +9,5 @@ $this->layout('layouts/app', ['title' => 'Home']);
         <code>HomeController::index</code> through the Container, and rendered
         by the PHP View Renderer inside a layout.
     </p>
+    <p><a class="button" href="/tasks">Open the Task Manager →</a></p>
 </section>
