@@ -64,6 +64,23 @@ final class ResponseTest extends TestCase
         self::assertSame('<p>Hi</p>', $response->content());
     }
 
+    public function testJsonFactoryEncodesDataWithContentType(): void
+    {
+        $response = Response::json(['id' => 1, 'title' => 'Café / thé', 'tags' => []], 201);
+
+        self::assertSame(201, $response->status());
+        self::assertSame('application/json; charset=UTF-8', $response->header('Content-Type'));
+        self::assertSame('{"id":1,"title":"Café / thé","tags":[]}', $response->content());
+        self::assertSame(['id' => 1, 'title' => 'Café / thé', 'tags' => []], json_decode($response->content(), true));
+    }
+
+    public function testJsonFactoryRejectsUnencodableData(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        Response::json(["\xB1\x31"]);
+    }
+
     public function testRedirectFactorySetsLocationAndSeeOther(): void
     {
         $response = Response::redirect('/tasks/1');

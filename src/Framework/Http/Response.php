@@ -50,6 +50,19 @@ final class Response
     }
 
     /**
+     * Creates a JSON response. Encoding errors throw instead of silently
+     * producing an empty body.
+     *
+     * @throws \JsonException
+     */
+    public static function json(mixed $data, int $status = 200): self
+    {
+        $json = json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return new self($json, $status, ['Content-Type' => 'application/json; charset=UTF-8']);
+    }
+
+    /**
      * Creates a redirect response. 303 makes browsers follow a POST with a GET.
      */
     public static function redirect(string $location, int $status = 303): self
