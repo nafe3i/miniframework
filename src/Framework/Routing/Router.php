@@ -69,10 +69,14 @@ final class Router
 
     /**
      * Finds the route matching the request method and path.
+     *
+     * Ambiguity rule: static routes always win over dynamic ones (so
+     * "/tasks/create" beats "/tasks/{id}" whatever the declaration order);
+     * among dynamic routes, the first declared wins.
      */
     public function match(Request $request): ?RouteMatch
     {
-        foreach ($this->routes as $route) {
+        foreach ($this->orderedRoutes() as $route) {
             if ($route->method() !== $request->method()) {
                 continue;
             }
@@ -84,5 +88,16 @@ final class Router
         }
 
         return null;
+    }
+
+    /**
+     * @return list<Route> Static routes first, then dynamic ones, each group in declaration order.
+     */
+    private function orderedRoutes(): array
+    {
+        $static = array_filter($this->routes, static fn (Route $route): bool => $route->isStatic());
+        $dynamic = array_filter($this->routes, static fn (Route $route): bool => !$route->isStatic());
+
+        return [...array_values($static), ...array_values($dynamic)];
     }
 }

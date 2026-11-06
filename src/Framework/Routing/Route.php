@@ -85,7 +85,39 @@ final class Route
      */
     public function matchPath(string $path): ?array
     {
-        return $path === $this->path ? [] : null;
+        if ($this->isStatic()) {
+            return $path === $this->path ? [] : null;
+        }
+
+        if (preg_match($this->regex(), $path, $matches) !== 1) {
+            return null;
+        }
+
+        $parameters = [];
+        foreach ($this->parameterNames() as $name) {
+            $parameters[$name] = $matches[$name];
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * Compiles the pattern: literal parts are quoted, each "{name}" becomes a
+     * named group matching one non-empty segment.
+     */
+    private function regex(): string
+    {
+        $parts = preg_split(self::PARAMETER, $this->path, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $regex = '';
+
+        foreach ($parts === false ? [] : $parts as $index => $part) {
+            // With DELIM_CAPTURE, odd indexes are parameter names, even ones are literals.
+            $regex .= $index % 2 === 1
+                ? '(?P<' . $part . '>[^/]+)'
+                : preg_quote($part, '#');
+        }
+
+        return '#^' . $regex . '$#u';
     }
 
     /**
