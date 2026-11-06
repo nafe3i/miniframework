@@ -1,0 +1,16 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - app
+        - bootstrap
+        - config
+        - routes
+        - public/index.php
+        - database/init.php
+        - tests
+    excludePaths:
+        - tests/Fixtures/views/*
+        - tests/Fixtures/error-views/*
+        - tests/Fixtures/broken-error-views/*
+        - tests/Fixtures/outside.php
