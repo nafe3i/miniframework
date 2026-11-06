@@ -515,8 +515,8 @@ Anthropic, running in Claude Code). The agent wrote code, tests and documentatio
 a written engineering contract defined by the project owner (architecture, scope,
 micro-commit protocol). The commit timestamps reflect the agent's pace (the 60 initial
 commits were created in about 30 minutes); they show the order in which the framework
-was built, not a human development timeline. Agent commits carry a `Co-Authored-By`
-trailer. Every result reported here comes from commands actually executed.
+was built, not a human development timeline. Every result reported here comes from
+commands actually executed.
 
 ---
 
