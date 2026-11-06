@@ -71,6 +71,16 @@ final class TaskCreationTest extends ApplicationTestCase
         self::assertSame([], $this->db()->select('SELECT * FROM tasks'));
     }
 
+    public function testInvalidUtf8InputIsRejectedAndApiKeepsWorking(): void
+    {
+        $response = $this->request('POST', '/tasks', ['title' => "Pr\xE9parer", 'description' => "d\xE9mo"]);
+
+        self::assertSame(422, $response->status());
+        self::assertStringContainsString('The title must be valid UTF-8 text.', $response->content());
+        self::assertSame([], $this->db()->select('SELECT * FROM tasks'));
+        self::assertSame(200, $this->request('GET', '/api/tasks')->status());
+    }
+
     public function testUnexpectedFieldsAreIgnored(): void
     {
         $this->request('POST', '/tasks', ['title' => 'Mass assignment', 'id' => '99']);

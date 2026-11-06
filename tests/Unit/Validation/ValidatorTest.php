@@ -91,6 +91,20 @@ final class ValidatorTest extends TestCase
         self::assertSame([], $this->validator->errors(['title' => 'text'], ['title' => 'required|string']));
     }
 
+    public function testMultibyteStringIsAccepted(): void
+    {
+        self::assertSame([], $this->validator->errors(['title' => 'Préparer la démo ✓'], ['title' => 'required|string']));
+    }
+
+    public function testStringWithInvalidUtf8IsRejected(): void
+    {
+        // "Préparer" encoded in Latin-1: the é is the single byte 0xE9.
+        self::assertSame(
+            ['title' => ['The title must be valid UTF-8 text.']],
+            $this->validator->errors(['title' => "Pr\xE9parer"], ['title' => 'required|string']),
+        );
+    }
+
     public function testFirstFailingRuleWins(): void
     {
         self::assertSame(

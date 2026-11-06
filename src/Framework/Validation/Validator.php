@@ -81,13 +81,26 @@ final class Validator
     {
         return match ($rule) {
             'required' => self::isEmpty($value) ? sprintf('The %s is required.', $field) : null,
-            'string' => is_string($value) ? null : sprintf('The %s must be a string.', $field),
+            'string' => $this->checkString($field, $value),
             'max' => $this->checkMax($field, $value, $argument),
             'in' => in_array($value, explode(',', (string) $argument), true)
                 ? null
                 : sprintf('The selected %s is invalid.', $field),
             default => throw new InvalidArgumentException(sprintf('Unknown validation rule [%s].', $rule)),
         };
+    }
+
+    /**
+     * string — a PHP string holding valid UTF-8. Invalid byte sequences (e.g.
+     * Latin-1 text) would otherwise be stored and later break JSON encoding.
+     */
+    private function checkString(string $field, mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return sprintf('The %s must be a string.', $field);
+        }
+
+        return mb_check_encoding($value, 'UTF-8') ? null : sprintf('The %s must be valid UTF-8 text.', $field);
     }
 
     /**
