@@ -34,7 +34,13 @@ final class PhpViewRenderer implements ViewRendererInterface
 
     public function render(string $view, array $data = []): string
     {
-        return $this->evaluate($this->resolve($view));
+        foreach (array_keys($data) as $name) {
+            if (!is_string($name) || preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name) !== 1 || $name === 'this' || str_starts_with($name, '__')) {
+                throw new InvalidArgumentException(sprintf('Invalid view variable name [%s].', (string) $name));
+            }
+        }
+
+        return $this->evaluate($this->resolve($view), $data);
     }
 
     public function exists(string $view): bool
@@ -68,17 +74,21 @@ final class PhpViewRenderer implements ViewRendererInterface
     }
 
     /**
-     * Executes the template in an isolated scope and captures its output.
+     * Executes the template in an isolated scope, with each data entry exposed
+     * as a local variable, and captures its output.
+     *
+     * @param array<string, mixed> $data
      */
-    private function evaluate(string $file): string
+    private function evaluate(string $file, array $data): string
     {
         $level = ob_get_level();
         ob_start();
 
         try {
-            (static function (string $__file): void {
+            (static function (string $__file, array $__data): void {
+                extract($__data, EXTR_SKIP);
                 include $__file;
-            })($file);
+            })($file, $data);
         } catch (Throwable $exception) {
             while (ob_get_level() > $level) {
                 ob_end_clean();

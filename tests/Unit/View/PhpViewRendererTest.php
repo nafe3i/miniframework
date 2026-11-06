@@ -37,6 +37,52 @@ final class PhpViewRendererTest extends TestCase
         self::assertSame("<p>Nested page</p>\n", $this->views->render('pages.about'));
     }
 
+    public function testPassesDataAsTemplateVariables(): void
+    {
+        $html = $this->views->render('greeting', ['name' => 'Ada', 'items' => [1, 2, 3]]);
+
+        self::assertSame("<p>Ada has 3 items</p>\n", $html);
+    }
+
+    public function testDataDoesNotLeakBetweenRenders(): void
+    {
+        $this->views->render('greeting', ['name' => 'Ada', 'items' => []]);
+
+        $this->expectException(\Throwable::class);
+        // "name" is not defined anymore: the template fails on the undefined variable / count(null).
+        set_error_handler(static function (int $severity, string $message): never {
+            throw new \ErrorException($message, 0, $severity);
+        });
+        try {
+            $this->views->render('greeting', []);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * @return iterable<string, array{array<mixed>}>
+     */
+    public static function invalidData(): iterable
+    {
+        yield 'this' => [['this' => 'x']];
+        yield 'internal variable' => [['__file' => '/etc/passwd']];
+        yield 'not an identifier' => [['first-name' => 'x']];
+        yield 'numeric key' => [[0 => 'x']];
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    #[DataProvider('invalidData')]
+    public function testRejectsInvalidVariableNames(array $data): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        // @phpstan-ignore-next-line intentionally invalid
+        $this->views->render('hello', $data);
+    }
+
     public function testMissingViewThrows(): void
     {
         $this->expectException(ViewNotFoundException::class);
