@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 use App\Contracts\TaskRepositoryInterface;
 use App\Controllers\HomeController;
+use App\Controllers\TaskApiController;
 use App\Controllers\TaskController;
 use App\Repositories\PdoTaskRepository;
 use App\Services\TaskService;
@@ -92,6 +93,9 @@ return static function (?Config $config = null): Container {
         $c->get(TaskService::class),
         $c->get(ViewRendererInterface::class),
     ));
+
+    $container->bind(TaskApiController::class, static fn (ContainerInterface $c): TaskApiController
+        => new TaskApiController($c->get(TaskService::class)));
 
     return $container;
 };

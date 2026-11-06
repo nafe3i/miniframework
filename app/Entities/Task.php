@@ -45,4 +45,17 @@ final class Task
     {
         return $this->status;
     }
+
+    /**
+     * @return array{id: int, title: string, description: ?string, status: string}
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'status' => $this->status->value,
+        ];
+    }
 }

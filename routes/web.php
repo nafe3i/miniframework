@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 
 use App\Controllers\HomeController;
+use App\Controllers\TaskApiController;
 use App\Controllers\TaskController;
 use MiniForge\Routing\Router;
 
@@ -21,4 +22,8 @@ return static function (Router $router): void {
     $router->get('/tasks/{id}/edit', [TaskController::class, 'edit']);
     $router->post('/tasks/{id}/update', [TaskController::class, 'update']);
     $router->post('/tasks/{id}/delete', [TaskController::class, 'destroy']);
+
+    // Read-only JSON API
+    $router->get('/api/tasks', [TaskApiController::class, 'index']);
+    $router->get('/api/tasks/{id}', [TaskApiController::class, 'show']);
 };
