@@ -16,11 +16,13 @@ final class Request
 
     /**
      * @param array<string, mixed> $query Query string parameters
+     * @param array<string, mixed> $input Form body parameters
      */
     public function __construct(
         string $method,
         string $path,
         private readonly array $query = [],
+        private readonly array $input = [],
     ) {
         $this->method = strtoupper($method);
         $this->path = self::normalizePath($path);
@@ -50,6 +52,33 @@ final class Request
     public function allQuery(): array
     {
         return $this->query;
+    }
+
+    /**
+     * Returns a form body parameter, or the default when it is absent.
+     */
+    public function input(string $key, mixed $default = null): mixed
+    {
+        return $this->input[$key] ?? $default;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function allInput(): array
+    {
+        return $this->input;
+    }
+
+    /**
+     * Returns only the given keys from the form body (missing keys are skipped).
+     *
+     * @param list<string> $keys
+     * @return array<string, mixed>
+     */
+    public function only(array $keys): array
+    {
+        return array_intersect_key($this->input, array_flip($keys));
     }
 
     /**

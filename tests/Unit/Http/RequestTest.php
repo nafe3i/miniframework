@@ -51,4 +51,28 @@ final class RequestTest extends TestCase
         self::assertNull($request->query('page'));
         self::assertSame('1', $request->query('page', '1'));
     }
+
+    public function testExposesFormInput(): void
+    {
+        $request = new Request('POST', '/tasks', [], ['title' => 'Write docs', 'status' => 'TODO']);
+
+        self::assertSame('Write docs', $request->input('title'));
+        self::assertSame('fallback', $request->input('missing', 'fallback'));
+        self::assertSame(['title' => 'Write docs', 'status' => 'TODO'], $request->allInput());
+    }
+
+    public function testOnlyReturnsRequestedInputKeys(): void
+    {
+        $request = new Request('POST', '/tasks', [], ['title' => 'A', 'is_admin' => '1']);
+
+        self::assertSame(['title' => 'A'], $request->only(['title', 'description']));
+    }
+
+    public function testQueryAndInputAreKeptSeparate(): void
+    {
+        $request = new Request('POST', '/tasks', ['title' => 'from-query'], ['title' => 'from-body']);
+
+        self::assertSame('from-query', $request->query('title'));
+        self::assertSame('from-body', $request->input('title'));
+    }
 }
