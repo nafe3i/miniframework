@@ -1,0 +1,10 @@
+/vendor/
+/database/*.sqlite
+/database/*.sqlite-journal
+/.phpunit.cache/
+/.phpunit.result.cache
+/.env
+/storage/
+.idea/
+.vscode/
+*.log
